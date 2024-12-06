@@ -116,7 +116,7 @@ const Limiter = rateLimit({
 
 // Make It For Spacific Route
 // app.use(Limiter);
-app.use(xssClean());
+// app.use(xssClean());
 // Json Parser
 app.use(express.json());
 
