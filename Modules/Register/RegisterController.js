@@ -25,8 +25,20 @@ const RegisterController = {
       const token = await TokenGenerator.generate(payload);
       return res
         .status(200)
-        .cookie("Token", token, { maxAge: 604800000 })
-        .cookie("Restaurant", restaurant , { maxAge: 604800000 })
+        .cookie("Token", token, { 
+          maxAge: 604800000,
+          httpOnly: true,
+          secure: true, // Ensures the cookie is only sent over HTTPS
+          sameSite: 'Strict',
+          path: '/'
+        })
+        .cookie("Restaurant", restaurant , { 
+          maxAge: 604800000,
+          httpOnly: true,
+          secure: true, // Ensures the cookie is only sent over HTTPS
+          sameSite: 'Strict',
+          path: '/' 
+        })
         .json({
           msg: "Found",
           supervisor: supervisor,
