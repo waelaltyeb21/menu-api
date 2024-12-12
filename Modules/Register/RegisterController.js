@@ -25,7 +25,11 @@ const RegisterController = {
       const token = await TokenGenerator.generate(payload);
       return res
         .status(200)
-        .cookie("Token", token)
+        .cookie("Token", {
+          supervisor: supervisor,
+          restaurant: restaurant,
+          token: token,
+        })
         .json({
           msg: "Found",
           supervisor: supervisor,
