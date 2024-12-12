@@ -26,7 +26,7 @@ const RegisterController = {
       return res
         .status(200)
         .cookie("Token", token, { maxAge: 604800000 })
-        .cookie("Restaurant", { restaurant, supervisor }, { maxAge: 604800000 })
+        .cookie("Restaurant", restaurant , { maxAge: 604800000 })
         .json({
           msg: "Found",
           supervisor: supervisor,
