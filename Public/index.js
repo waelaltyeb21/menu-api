@@ -171,10 +171,10 @@ mongoose
   .connect(MONGO_URI)
   .then(() => {
     console.log("Connected To DB!");
-    server.listen(SOCKET_PORT, () =>
+    server.listen(PORT, () =>
       console.log(`Server Running On Port ${5000}`)
     );
-    app.listen(PORT, () => console.log(`Server Running On Port ${PORT}`));
+    // app.listen(PORT, () => console.log(`Server Running On Port ${PORT}`));
   })
   .catch((err) => console.log("Something Went Wrong!", err));
 
