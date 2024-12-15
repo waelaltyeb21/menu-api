@@ -14,7 +14,7 @@ const HandleConnectedClients = (ClientID, SocketID) => {
 // Handle Disconnected Clients
 const HandleDisconnectedClients = (socketID) => {
   // Find Client
-  const Client = ClientsIDs.find((clientID) => clientID?.Socket.id == socketID);
+  const Client = ClientsIDs.find((clientID) => clientID?.ClientID == socketID);
   if (Client) {
     ClientsIDs = ClientsIDs.filter(
       (clientID) => clientID?.Socket.id != socketID
