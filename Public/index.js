@@ -61,14 +61,14 @@ io.on("connection", (socket) => {
   });
 
   // Disconnect
-  io.on("disconnect", () => {
+  socket.on("disconnect", () => {
     console.log("User With ID ", socket.id, " Disconnected");
     HandleDisconnectedClients(socket.id);
     HandleDisonnectedRestaurants(socket.id);
   });
 
   // Error
-  io.on("error", (error) => {
+  socket.on("error", (error) => {
     io.emit("disconnect", error);
   });
 });
