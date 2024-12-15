@@ -7,6 +7,7 @@ const {
   SendNotificationToRestaurant,
   SendNotificationToClient,
 } = require("../Notification/NotificationController");
+const { UpdateDoc } = require("../../Config/DbQueries/DbQueries");
 
 const allOrders = async (restaurant) => {
   const orders = await OrderModel.aggregate([
@@ -205,17 +206,15 @@ const OrderController = {
 
         const createOrder = await OrderModel.create(data);
         // Update Table Status
-        TableModel.findByIdAndUpdate(
-          { _id: table },
-          {
-            active: false,
-          }
-        );
+        const updateTable = await UpdateDoc(TableModel, table, {
+          active: false,
+        });
+        console.log("Table: ", updateTable);
 
         // Request For New Order
         // -----------------------------------------------
         //  && updateTable
-        if (createOrder) {
+        if (createOrder && updateTable) {
           const ordersDetails = await allOrders(restaurant);
           const order = {
             msg: "هنالك طلب جديد!",
@@ -353,12 +352,12 @@ const OrderController = {
         const restaurantID = order.restaurant;
         if (order) {
           // Update Table Status
-          await TableModel.findByIdAndUpdate(id, {
+          await UpdateDoc(TableModel, table, {
             active: true,
           });
-
-          // Return All Orders After Delete
-          await RestaurantModel.findByIdAndUpdate(restaurantID, {
+          
+          // Update Number Of Canceled Orders
+          await UpdateDoc(RestaurantModel, restaurantID, {
             $inc: { "ordersDetails.totalCanceledOrders": 1 },
           });
 
