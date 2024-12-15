@@ -172,7 +172,7 @@ const RestaurantController = {
             restaurant,
           });
         // If Restaurant Is Not Active
-        if (!restaurant.active) {
+        if (restaurant.active) {
           res.status(400).json({
             msg: {
               ar: "هذا المطعم متوقف عن العمل مؤقتا",
@@ -202,7 +202,7 @@ const RestaurantController = {
             restaurant,
           });
         // If Table Not Active
-        if (!table.active)
+        if (table.active)
           return res.status(400).json({
             msg: {
               ar: "هذه الطاولة محجوزة",
