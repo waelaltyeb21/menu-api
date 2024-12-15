@@ -1,10 +1,10 @@
 // Restaurants & Clients
-const RestaurantsIDs = [];
-const ClientsIDs = [];
+let RestaurantsIDs = [];
+let ClientsIDs = [];
 
 // Handle Connected Clients
 const HandleConnectedClients = (ClientID, SocketID) => {
-  const Client = ClientsIDs.find((Client) => Client.ClientID === ClientID);
+  const Client = ClientsIDs.find((Client) => Client?.ClientID === ClientID);
   if (!Client) {
     console.log("### Client Connected Successfuly ###");
     ClientsIDs.push({ ClientID, SocketID });
@@ -13,12 +13,19 @@ const HandleConnectedClients = (ClientID, SocketID) => {
 
 // Handle Disconnected Clients
 const HandleDisconnectedClients = (socketID) => {
-  ClientsIDs = ClientsIDs.filter((clientID) => clientID.Socket.id != socketID);
+  // Find Client
+  const Client = ClientsIDs.find((clientID) => clientID?.Socket.id == socketID);
+  if (Client) {
+    ClientsIDs = ClientsIDs.filter(
+      (clientID) => clientID?.Socket.id != socketID
+    );
+    console.log("## Client With Id ", socketID, " Has Been Disconnected ##");
+  }
 };
 
 // Get Client By ID
 const GetClientID = (clientID) => {
-  const Client = ClientsIDs.find((Client) => Client.ClientID == clientID);
+  const Client = ClientsIDs.find((Client) => Client?.ClientID == clientID);
   return Client ? Client.SocketID : null;
 };
 
@@ -33,7 +40,7 @@ const SendNotificationToClient = (io, ClientID, data) => {
 // Handle Connected Restaurants
 const HandleConnectedRestaurants = (RestaurantID, SocketID) => {
   const restaurant = RestaurantsIDs.find(
-    (Restaurant) => Restaurant.RestaurantID === RestaurantID
+    (Restaurant) => Restaurant?.RestaurantID === RestaurantID
   );
   // If Not Register
   if (!restaurant) {
@@ -44,25 +51,40 @@ const HandleConnectedRestaurants = (RestaurantID, SocketID) => {
 
 // Handle Disonnected Restaurants
 const HandleDisonnectedRestaurants = (socketID) => {
-  console.log(socketID);
-  RestaurantsIDs = RestaurantsIDs.filter(
-    (restaurant) => restaurant.SocketID != socketID
+  const restaurant = RestaurantsIDs.find(
+    (restaurant) => restaurant?.SocketID == socketID
   );
-  console.log("#Restuarant With Id ", socketID, " Has Been Disconnected");
+  if (restaurant) {
+    RestaurantsIDs = RestaurantsIDs.filter(
+      (restaurant) => restaurant?.SocketID != socketID
+    );
+    console.table(RestaurantsIDs);
+    console.log(
+      "## Restuarant With Id ",
+      socketID,
+      " Has Been Disconnected ##"
+    );
+  }
 };
 
 // Get Client By ID
 const GetRestaurantID = (restaurantID) => {
   const Restaurant = RestaurantsIDs.find(
-    (Restaurant) => Restaurant.RestaurantID === restaurantID
+    (Restaurant) => Restaurant?.RestaurantID === restaurantID
   );
-  return Restaurant ? Restaurant.SocketID : null;
+  return Restaurant ? Restaurant?.SocketID : null;
 };
 
 // Send A Notification To Restaurant => New Order
 const SendNotificationToRestaurant = (io, RestaurantID, order) => {
   const SocketID = GetRestaurantID(RestaurantID);
-  console.log("Message Sent To Restaurant With ID: ", SocketID);
+  console.log(
+    "Message Sent To Restaurant With ID: ",
+    SocketID,
+    "Is: ",
+    SocketID != null
+  );
+  console.log("Order: ", order);
   if (SocketID != null) {
     io.to(SocketID).emit("New-Order", order);
   }
