@@ -3,7 +3,6 @@ const OrderModel = require("./OrderModel");
 const TableModel = require("../Table/TableModel");
 const RestaurantModel = require("../Restaurant/RestaurantModel");
 const DishModel = require("../Dish/DishModel");
-const io = require("../../Public");
 const {
   SendNotificationToRestaurant,
   SendNotificationToClient,
@@ -205,12 +204,13 @@ const OrderController = {
           });
 
         const createOrder = await OrderModel.create(data);
-        // const updateTable = await TableModel.findByIdAndUpdate(
-        //   { _id: table },
-        //   {
-        //     active: false,
-        //   }
-        // );
+        // Update Table Status
+        TableModel.findByIdAndUpdate(
+          { _id: table },
+          {
+            active: false,
+          }
+        );
 
         // Request For New Order
         // -----------------------------------------------
@@ -309,6 +309,12 @@ const OrderController = {
         if (order) {
           const orders = await allOrders(restaurant);
           await OrderModel.findByIdAndDelete(orderID);
+          TableModel.findByIdAndUpdate(
+            { _id: table },
+            {
+              active: true,
+            }
+          );
           await RestaurantModel.findByIdAndUpdate(restaurant, {
             $inc: { "ordersDetails.totalPaidOrders": 1, earnings: total },
           });
