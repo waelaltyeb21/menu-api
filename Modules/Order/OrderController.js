@@ -209,11 +209,9 @@ const OrderController = {
         const updateTable = await UpdateDoc(TableModel, table, {
           active: false,
         });
-        console.log("Table: ", updateTable);
 
         // Request For New Order
         // -----------------------------------------------
-        //  && updateTable
         if (createOrder && updateTable) {
           const ordersDetails = await allOrders(restaurant);
           const order = {
@@ -222,7 +220,12 @@ const OrderController = {
           };
 
           // Send Notification To Restaurant
-          SendNotificationToRestaurant(req.app.get("io"), restaurant, order);
+          SendNotificationToRestaurant(
+            req.app.get("io"),
+            restaurant,
+            order,
+            "New-Order"
+          );
 
           return res.status(201).json({
             msg: "تم ارسال الطلب بنجاح",
@@ -315,9 +318,14 @@ const OrderController = {
             $inc: { "ordersDetails.totalPaidOrders": 1, earnings: total },
           });
           // Notification When Status Change And When Order Deleted
-          SendNotificationToClient(req.app.get("io"), table, {
-            msg: "تم الدفع واكمال الطلب بنجاح",
-          });
+          SendNotificationToClient(
+            req.app.get("io"),
+            table,
+            {
+              msg: "تم الدفع واكمال الطلب بنجاح",
+            },
+            "Order-Status"
+          );
           return res.status(200).json({
             msg: "تم الدفع واكمال الطلب بنجاح",
             orders: orders,
@@ -346,10 +354,11 @@ const OrderController = {
       if (isValidObjectId(id)) {
         // findOneAndDelete
         const order = await OrderModel.deleteMany({ table: id });
-        const restaurantID = order.restaurant;
+        // Restaurant ID
+        const restaurantID = order?.restaurant;
         if (order) {
           // Update Table Status
-          await UpdateDoc(TableModel, table, {
+          await UpdateDoc(TableModel, id, {
             active: true,
           });
 
@@ -359,9 +368,14 @@ const OrderController = {
           });
 
           // Notification To Client
-          SendNotificationToClient(req.app.get("io"), id, {
-            msg: "تم حذف طلبك",
-          });
+          SendNotificationToClient(
+            req.app.get("io"),
+            id,
+            {
+              msg: "تم حذف طلبك",
+            },
+            "Order-Status"
+          );
 
           // Return Response
           return res.status(200).json({ msg: "تم حذف الطلب" });
