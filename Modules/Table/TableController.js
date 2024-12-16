@@ -2,6 +2,9 @@ const { default: mongoose, isValidObjectId } = require("mongoose");
 const io = require("../../Public");
 const TableModel = require("./TableModel");
 const { allOrders } = require("../Order/OrderController");
+const {
+  SendNotificationToRestaurant,
+} = require("../Notification/NotificationController");
 
 const TableController = {
   // Get All Tables
@@ -58,31 +61,33 @@ const TableController = {
   // Create New Table
   CreateNewTable: async (req, res) => {
     const { tablesLength, tableLetter, restaurantID } = req.body;
-    console.log("Length: ", tablesLength, "Letter: ", tableLetter);
     try {
       if (isValidObjectId(restaurantID)) {
         if (!tablesLength || !tableLetter)
           return res.status(400).json({ msg: "Invalid Values" });
 
-        const tables = await TableModel.find({ restaurant: restaurantID });
-        let startFrom =
-          parseInt(tables[tables.length - 1].tableID.slice(1)) || 1;
-        // if (tables.length == 0) {
         const newTables = [];
         Array.from({ length: tablesLength }).map((table, index) => {
           newTables[index] = {
-            tableID: `${tableLetter}${startFrom + (index + 1)}`,
+            tableID: `${tableLetter}${index + 1}`,
             restaurant: restaurantID,
           };
         });
+
+        // Insert New Tables
         const added = await TableModel.insertMany(newTables);
+
         if (added) {
           const tables = await TableModel.find({ restaurant: restaurantID });
-          console.log(tables);
-          io.emit("new-tables", tables);
+          // Send Notification To Restaurant
+          SendNotificationToRestaurant(
+            req.app.get("io"),
+            restaurantID,
+            tables,
+            "New-Tables"
+          );
         }
         return res.status(200).json({ msg: "Created Successfuly" });
-        // }
       }
       return res.status(400).json({ msg: "Invalid Restaurant" });
     } catch (error) {
