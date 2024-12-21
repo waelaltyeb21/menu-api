@@ -17,8 +17,8 @@ const { Server } = require("socket.io");
 const io = new Server(server, {
   cors: {
     origin: [
-      // "http://localhost:5173",
-      // "http://localhost:5174",
+      "http://localhost:5173",
+      "http://localhost:5174",
       "https://digital-menu1.web.app", // Client
       "https://restaurants-menu-55879.web.app", // Dashboard
     ],
@@ -44,11 +44,6 @@ const {
 
 // Socket.io
 io.on("connection", (socket) => {
-  console.table([
-    { restaurants: RestaurantsIDs.length },
-    { clients: ClientsIDs.length },
-  ]);
-
   // Client Connected
   socket.on("Client-Connected", (ClientID) => {
     HandleConnectedClients(ClientID, socket.id);
@@ -114,7 +109,6 @@ const Limiter = rateLimit({
 
 // Make It For Spacific Route
 // app.use(Limiter);
-// app.use(xssClean());
 // Json Parser
 app.use(express.json());
 
@@ -122,8 +116,8 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      // "http://localhost:5173",
-      // "http://localhost:5174",
+      "http://localhost:5173",
+      "http://localhost:5174",
       "https://digital-menu1.web.app", // Client
       "https://restaurants-menu-55879.web.app", // Dashboard
     ],
@@ -168,6 +162,8 @@ app.get("*", (req, res) => {
 mongoose
   .connect(MONGO_URI)
   .then(() => {
-    server.listen(PORT, () => console.log(`Server Running On Port ${PORT}`));
+    server.listen(PORT, () =>
+      console.log(`### - Socket Io Server Running On Port ${PORT} - ###`)
+    );
   })
   .catch((err) => console.log("Something Went Wrong!", err));

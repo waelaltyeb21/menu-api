@@ -7,7 +7,11 @@ const {
   SendNotificationToRestaurant,
   SendNotificationToClient,
 } = require("../Notification/NotificationController");
-const { UpdateDoc, DeleteDoc } = require("../../Config/DbQueries/DbQueries");
+const {
+  UpdateDoc,
+  DeleteDoc,
+  GetAllDocs,
+} = require("../../Config/DbQueries/DbQueries");
 
 const allOrders = async (restaurant) => {
   const orders = await OrderModel.aggregate([
@@ -117,6 +121,7 @@ const OrderController = {
     const { id } = req.params;
     try {
       if (isValidObjectId(id)) {
+        // Get Order Details
         const [order] = await OrderModel.aggregate([
           {
             $match: {
@@ -124,16 +129,50 @@ const OrderController = {
             },
           },
           {
+            $unwind: "$orders",
+          },
+          {
             $lookup: {
               from: "dishes",
-              localField: "order",
-              foreignField: "id",
+              localField: "orders.order",
+              foreignField: "_id",
               as: "dishes",
+            },
+          },
+          {
+            $unwind: "$dishes",
+          },
+          {
+            $group: {
+              _id: "$_id",
+              restaurant: { $first: "$restaurant" },
+              user: { $first: "$user" },
+              orderStatus: { $first: "$orderStatus" },
+              table: { $first: "$table" },
+              totalOrders: { $sum: 1 },
+              totalQuntity: { $sum: "$orders.quantity" },
+              total: {
+                $sum: { $multiply: ["$dishes.price", "$orders.quantity"] },
+              },
+              dishes: {
+                $push: {
+                  _id: "$dishes._id",
+                  name: "$dishes.name",
+                  quantity: "$orders.quantity",
+                  price: "$dishes.price",
+                },
+              },
             },
           },
         ]);
 
-        if (order) return res.status(200).json(order);
+        // Get Dishes
+        const restaurant = order.restaurant;
+        // const dishes = await DishModel.find({ restaurant: restaurant });
+        const dishes = await GetAllDocs(DishModel, { restaurant: restaurant });
+        const tables = await GetAllDocs(TableModel, { restaurant: restaurant });
+
+        if (order) return res.status(200).json({ order, dishes, tables });
         return res.status(400).json({ msg: "تعذر العثور على الطلب" });
       }
       // -----------------------------------------------
@@ -146,9 +185,10 @@ const OrderController = {
   },
   // Create New Order => IsRequested
   CreateNewOrder: async (req, res) => {
-    const { orders, restaurant, table, total, user } = req.body;
+    const { orders, restaurant, table, total, user, orderStatus } = req.body;
     try {
       if (isValidObjectId(table) && isValidObjectId(restaurant)) {
+        const status = orderStatus || "isRequested";
         // Orders Data
         const data = {
           orders,
@@ -156,11 +196,7 @@ const OrderController = {
           table,
           total,
           user,
-          orderStatus: {
-            isRequested: true,
-            isProccessing: false,
-            isPaid: false,
-          },
+          orderStatus: status,
         };
 
         // Update The Times Of Dish Has Been Ordered
@@ -227,6 +263,7 @@ const OrderController = {
             "New-Order"
           );
 
+          console.log("Complated");
           return res.status(201).json({
             msg: "تم ارسال الطلب بنجاح",
             orders: {
@@ -251,6 +288,7 @@ const OrderController = {
         },
       });
     } catch (error) {
+      console.log(error);
       return res.status(500).json({
         msg: {
           ar: "حدث خطأ ما",
@@ -262,14 +300,14 @@ const OrderController = {
   },
   // Accept Order => IsProccessing
   AcceptOrder: async (req, res) => {
-    const { orderID, total, table, restaurant } = req.body;
+    const { orderID, table, restaurant } = req.body;
     try {
       if (
         isValidObjectId(orderID) &&
         isValidObjectId(restaurant) &&
         isValidObjectId(table)
       ) {
-        const orderStatus = InitialStatus("isProccessing");
+        const orderStatus = "isProccessing";
 
         // Update Order Status
         const order = await OrderModel.findByIdAndUpdate(orderID, {
@@ -301,7 +339,7 @@ const OrderController = {
     const { orderID, total, table, restaurant } = req.body;
     try {
       if (isValidObjectId(orderID) && isValidObjectId(restaurant)) {
-        const orderStatus = InitialStatus("isPaid");
+        const orderStatus = "isPaid";
 
         // Update Order Status
         const order = await UpdateDoc(OrderModel, orderID, {
@@ -340,7 +378,44 @@ const OrderController = {
   },
   // Update Order
   UpdateOrder: async (req, res) => {
+    const { id, orders, PrvTable, CurTable, user, orderStatus } = req.body;
+    console.log(id, orders, user, orderStatus);
     try {
+      if (
+        isValidObjectId(id) &&
+        isValidObjectId(PrvTable) &&
+        isValidObjectId(CurTable)
+      ) {
+        // const orderStatus = InitialStatus(status);
+        const data = {
+          orders,
+          table: CurTable,
+          user,
+          orderStatus,
+        };
+
+        if (PrvTable != CurTable) {
+          console.log("Tables Status Has Been Updated");
+          // Update Previous Table To Be Active => true
+          await UpdateDoc(TableModel, PrvTable, { active: true });
+          // Update Current Table To Be Not Active => false
+          await UpdateDoc(TableModel, CurTable, { active: false });
+        }
+
+        const order = await UpdateDoc(OrderModel, id, data);
+
+        // Update The Times Of Dish Has Been Ordered
+        orders.map(async (order) => {
+          await DishModel.findByIdAndUpdate(order.order, {
+            $inc: { NumberOfOrders: order.quantity },
+          });
+        });
+
+        if (order) return res.status(200).json({ msg: "تم تحديث الطلب بنجاح" });
+
+        return res.status(404).json({ msg: "حدث خطأ ما" });
+      }
+      return res.status(400).json({ msg: "Invalid Data" });
     } catch (error) {
       return res
         .status(500)
