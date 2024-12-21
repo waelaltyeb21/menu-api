@@ -10,7 +10,7 @@ const {
 
 const RestaurantController = {
   // Get All Restaurants
-  Testing: async (req, res) => {
+  GetRestaurant: async (req, res) => {
     const { restaurant } = req.params;
     try {
       if (isValidObjectId(restaurant)) {
@@ -127,25 +127,6 @@ const RestaurantController = {
     try {
       const restaurants = await RestaurantModel.find();
       return res.status(200).json(restaurants);
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ msg: "Something Went Wrong!", error: error });
-    }
-  },
-  // Get Restaurant
-  GetRestaurant: async (req, res) => {
-    const { id } = req.params;
-    try {
-      if (isValidObjectId(id)) {
-        const Restaurant = await GetDoc(RestaurantModel, id);
-        console.log(Restaurant);
-        if (!Restaurant)
-          return res.status(400).json({ msg: "هذا المطعم غير موجود" });
-        // If Not Found
-        return res.status(200).json(Restaurant);
-      }
-      return res.status(400).json({ msg: "Invalid Restaurant" });
     } catch (error) {
       return res
         .status(500)
