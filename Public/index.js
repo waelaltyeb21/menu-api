@@ -1,6 +1,5 @@
 // Libraries
 const express = require("express");
-const serverless = require("serverless-http");
 const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -8,7 +7,7 @@ const mongoose = require("mongoose");
 // // Enviromantal Variables
 require("dotenv").config();
 const PORT = process.env.PORT;
-const SOCKET_PORT = process.env.SOCKET_PORT;
+// const SOCKET_PORT = process.env.SOCKET_PORT;
 const MONGO_URI = process.env.DB_URI;
 
 // Socket.io Server
@@ -78,35 +77,34 @@ module.exports = io;
 
 // Middelwares
 const { default: rateLimit } = require("express-rate-limit");
-// const { default: helmet } = require("helmet");
-// const xssClean = require("xss-clean");
-const { AuthChecker } = require("../Middelwares/AuthToken");
+const { default: helmet } = require("helmet");
+// const { AuthChecker } = require("../Middelwares/AuthToken");
 const path = require("path");
 
 // Helmet
 // Using Helmet to apply all headers
-// app.use(helmet());
+app.use(helmet());
 
-// // Or explicitly enable and configure all the individual Helmet features
-// app.use(helmet.dnsPrefetchControl()); // Controls DNS prefetching (default: false)
-// app.use(helmet.frameguard({ action: "deny" })); // Prevents clickjacking (default: 'deny')
-// app.use(helmet.hidePoweredBy()); // Hides the 'X-Powered-By' header (default: true)
-// app.use(
-//   helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true })
-// ); // Enforces HTTPS (default: false)
-// app.use(helmet.ieNoOpen()); // Prevents IE from opening untrusted files (default: true)
-// app.use(helmet.noSniff()); // Prevents browsers from interpreting files as a different MIME type (default: true)
-// app.use(helmet.xssFilter()); // Sets the 'X-XSS-Protection' header (default: true)
-// app.use(helmet.referrerPolicy({ policy: "strict-origin-when-cross-origin" })); // Controls the Referer header (default: 'no-referrer')
-// app.use(
-//   helmet.contentSecurityPolicy({
-//     directives: {
-//       defaultSrc: ["'self'"],
-//       scriptSrc: ["'self'", "https://trusted-scripts.com"],
-//       objectSrc: ["'none'"],
-//     },
-//   })
-// ); // Controls content sources (default: none)
+// Or explicitly enable and configure all the individual Helmet features
+app.use(helmet.dnsPrefetchControl()); // Controls DNS prefetching (default: false)
+app.use(helmet.frameguard({ action: "deny" })); // Prevents clickjacking (default: 'deny')
+app.use(helmet.hidePoweredBy()); // Hides the 'X-Powered-By' header (default: true)
+app.use(
+  helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true })
+); // Enforces HTTPS (default: false)
+app.use(helmet.ieNoOpen()); // Prevents IE from opening untrusted files (default: true)
+app.use(helmet.noSniff()); // Prevents browsers from interpreting files as a different MIME type (default: true)
+app.use(helmet.xssFilter()); // Sets the 'X-XSS-Protection' header (default: true)
+app.use(helmet.referrerPolicy({ policy: "strict-origin-when-cross-origin" })); // Controls the Referer header (default: 'no-referrer')
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://trusted-scripts.com"],
+      objectSrc: ["'none'"],
+    },
+  })
+); // Controls content sources (default: none)
 // Rate Limit
 const Limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // Time
@@ -170,12 +168,6 @@ app.get("*", (req, res) => {
 mongoose
   .connect(MONGO_URI)
   .then(() => {
-    console.log("Connected To DB!");
-    server.listen(PORT, () =>
-      console.log(`Server Running On Port ${5000}`)
-    );
-    // app.listen(PORT, () => console.log(`Server Running On Port ${PORT}`));
+    server.listen(PORT, () => console.log(`Server Running On Port ${PORT}`));
   })
   .catch((err) => console.log("Something Went Wrong!", err));
-
-// module.exports.handler = serverless(app);
