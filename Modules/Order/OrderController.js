@@ -263,7 +263,6 @@ const OrderController = {
             "New-Order"
           );
 
-          console.log("Complated");
           return res.status(201).json({
             msg: "تم ارسال الطلب بنجاح",
             orders: {

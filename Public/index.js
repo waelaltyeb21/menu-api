@@ -76,39 +76,40 @@ const { default: helmet } = require("helmet");
 // const { AuthChecker } = require("../Middelwares/AuthToken");
 const path = require("path");
 
-// Helmet
-// Using Helmet to apply all headers
-app.use(helmet());
+// // Helmet
+// // Using Helmet to apply all headers
+// app.use(helmet());
 
 // Or explicitly enable and configure all the individual Helmet features
-app.use(helmet.dnsPrefetchControl()); // Controls DNS prefetching (default: false)
-app.use(helmet.frameguard({ action: "deny" })); // Prevents clickjacking (default: 'deny')
-app.use(helmet.hidePoweredBy()); // Hides the 'X-Powered-By' header (default: true)
+// Controls DNS prefetching (default: false)
+app.use(helmet.dnsPrefetchControl());
+// Prevents clickjacking (default: 'deny')
+app.use(helmet.frameguard({ action: "deny" }));
+// Hides the 'X-Powered-By' header (default: true)
+app.use(helmet.hidePoweredBy());
+// Enforces HTTPS (default: false)
 app.use(
   helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true })
-); // Enforces HTTPS (default: false)
-app.use(helmet.ieNoOpen()); // Prevents IE from opening untrusted files (default: true)
-app.use(helmet.noSniff()); // Prevents browsers from interpreting files as a different MIME type (default: true)
-app.use(helmet.xssFilter()); // Sets the 'X-XSS-Protection' header (default: true)
-app.use(helmet.referrerPolicy({ policy: "strict-origin-when-cross-origin" })); // Controls the Referer header (default: 'no-referrer')
+);
+// Prevents IE from opening untrusted files (default: true)
+app.use(helmet.ieNoOpen());
+// Prevents browsers from interpreting files as a different MIME type (default: true)
+app.use(helmet.noSniff());
+// Sets the 'X-XSS-Protection' header (default: true)
+app.use(helmet.xssFilter());
+// Controls the Referer header (default: 'no-referrer')
+app.use(helmet.referrerPolicy({ policy: "strict-origin-when-cross-origin" }));
+// Controls content sources (default: none)
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "https://trusted-scripts.com"],
+      scriptSrc: ["'self'"],
       objectSrc: ["'none'"],
     },
   })
-); // Controls content sources (default: none)
-// Rate Limit
-const Limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // Time
-  max: 10, // 10 Requests Pre 15 Minutes
-  message: "Too Many Requests",
-});
+);
 
-// Make It For Spacific Route
-// app.use(Limiter);
 // Json Parser
 app.use(express.json());
 
@@ -140,13 +141,25 @@ const Orders = require("../Modules/Order/Orders");
 const Tables = require("../Modules/Table/Tables");
 const Register = require("../Modules/Register/Register");
 
+// Register Rate Limit
+const RegisterLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // Time
+  max: 5, // 10 Requests Pre 5 Minutes
+  message: {
+    msg: {
+      ar: "الكثير من المحاولات الخاطئة .. حاول مجددا بعد 5 دقائق",
+      en: "Too Many Requests",
+    },
+  },
+});
+
 // Routes
 app.use("/api/restaurants", Restaurants);
 app.use("/api/dishes", Dishes);
 app.use("/api/categories", Categories);
 app.use("/api/orders", Orders);
 app.use("/api/tables", Tables);
-app.use("/api/register", Register);
+app.use("/api/register", RegisterLimiter, Register);
 
 //
 app.post("/api/refresh", (req, res) => {
