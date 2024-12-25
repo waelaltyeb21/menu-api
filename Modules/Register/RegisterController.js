@@ -115,7 +115,6 @@ const RegisterController = {
     const { email } = req.body;
     try {
       const [SupervisorEmail] = await Supervisor.find({ email: email });
-      console.log("Email: ", SupervisorEmail);
       if (!SupervisorEmail) return res.status(400).json({ msg: "Wrong Email" });
 
       const GenerateOTP = () => {
@@ -126,7 +125,7 @@ const RegisterController = {
       };
 
       const OTP = GenerateOTP();
-      console.log(`Your OTP: ${OTP}`);
+      // console.log(`Your OTP: ${OTP}`);
 
       const MailOptions = {
         from: process.env.Verify_Email, // sender address
@@ -150,7 +149,6 @@ const RegisterController = {
     const { otp } = req.body;
     try {
       const OTP = UsersOTP.find((UserOTP) => UserOTP.OTP == otp);
-      console.log(OTP);
       // console.log("User: ", otp, "Code: ", OTP, "Check: ", OTP == otp);
       if (!OTP)
         return res.status(400).json({ msg: "Incorrect OTP Code" });
@@ -177,7 +175,7 @@ const RegisterController = {
       );
       // Delete User From Temp Array
       UsersOTP = UsersOTP.filter((UserOTP) => UserOTP.Email != email);
-      console.log("UsersOTPs: ", UsersOTP);
+      // console.log("UsersOTPs: ", UsersOTP);
       return res
         .status(200)
         .json({ msg: "Password Has Been Change Successfuly" });
