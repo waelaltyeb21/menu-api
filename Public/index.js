@@ -71,7 +71,7 @@ app.set("io", io);
 module.exports = io;
 
 // Middelwares
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 const { default: rateLimit } = require("express-rate-limit");
 const { default: helmet } = require("helmet");
 const { AuthChecker } = require("../Middelwares/AuthToken");
@@ -146,7 +146,7 @@ const Register = require("../Modules/Register/Register");
 
 // Register Rate Limit
 const RegisterLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // Time
+  windowMs: 1 * 60 * 1000, // Time
   max: 5, // 10 Requests Pre 5 Minutes
   message: {
     msg: {
@@ -162,7 +162,7 @@ app.use("/api/dishes", Dishes);
 app.use("/api/categories", Categories);
 app.use("/api/orders", Orders);
 app.use("/api/tables", Tables);
-app.use("/api/register", Register);
+app.use("/api/register", RegisterLimiter, Register);
 
 // 404 - Route Not Found
 app.get("*", (req, res) => {
