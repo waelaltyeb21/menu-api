@@ -131,7 +131,7 @@ app.use(
 );
 
 // Auth
-// app.use(AuthChecker);
+app.use(AuthChecker);
 
 // Serve static files (uploaded images)
 app.use("/api/Uploads", express.static(path.join(__dirname, "../Uploads")));
