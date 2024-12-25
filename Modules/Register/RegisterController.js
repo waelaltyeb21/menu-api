@@ -21,7 +21,8 @@ const RegisterController = {
       const restaurant = await RestaurantModel.findById(supervisor.restaurant);
 
       // Hashing
-      // const Hashed = await Hashing.Hash(password, 10);
+      const Hashed = await Hashing.Hash(password, 10);
+      console.log(Hashed);
       const isMatched = await Hashing.Compare(password, supervisor.password);
       console.log(supervisor.password);
       console.log("IsMatch: ", isMatched);
@@ -50,8 +51,22 @@ const RegisterController = {
 
       // Response
       return res
-        .cookie("Token", Token, { maxAge: 15 * 60 * 1000 })
-        .cookie("RefreshToken", RefreshToken, { maxAge: 2 * 60 * 60 * 1000 })
+        .cookie("Token", Token, {
+          maxAge: 15 * 60 * 1000,
+          httpOnly: true,
+          secure: true,
+          sameSite: "Lax",
+          path: "/",
+          domain: "https://restaurants-menu-55879.web.app",
+        })
+        .cookie("RefreshToken", RefreshToken, {
+          maxAge: 2 * 60 * 60 * 1000,
+          httpOnly: true,
+          secure: true,
+          sameSite: "Lax",
+          path: "/",
+          domain: "https://restaurants-menu-55879.web.app",
+        })
         .status(200)
         .json({
           msg: "Found",
@@ -100,8 +115,22 @@ const RegisterController = {
       );
 
       return res
-        .cookie("Token", Token, { maxAge: 15 * 60 * 1000 })
-        .cookie("RefreshToken", Refresh, { maxAge: 2 * 60 * 60 * 1000 })
+        .cookie("Token", Token, {
+          maxAge: 15 * 60 * 1000,
+          httpOnly: true,
+          secure: true,
+          sameSite: "Lax",
+          path: "/",
+          domain: "https://restaurants-menu-55879.web.app",
+        })
+        .cookie("RefreshToken", Refresh, {
+          maxAge: 2 * 60 * 60 * 1000,
+          httpOnly: true,
+          secure: true,
+          sameSite: "Lax",
+          path: "/",
+          domain: "https://restaurants-menu-55879.web.app",
+        })
         .status(200)
         .json({
           msg: "Token Has Been Refreshed",
@@ -150,8 +179,7 @@ const RegisterController = {
     try {
       const OTP = UsersOTP.find((UserOTP) => UserOTP.OTP == otp);
       // console.log("User: ", otp, "Code: ", OTP, "Check: ", OTP == otp);
-      if (!OTP)
-        return res.status(400).json({ msg: "Incorrect OTP Code" });
+      if (!OTP) return res.status(400).json({ msg: "Incorrect OTP Code" });
       return res.status(200).json({ msg: `OTP Code Has Been Checked` });
     } catch (error) {
       return res
