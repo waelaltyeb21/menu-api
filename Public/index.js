@@ -75,7 +75,6 @@ const cookieParser = require("cookie-parser");
 const { default: rateLimit } = require("express-rate-limit");
 const { default: helmet } = require("helmet");
 const { AuthChecker } = require("../Middelwares/AuthToken");
-const TokenGenerator = require("../Services/TokenGenerator.js");
 const path = require("path");
 // Cookies Parser
 app.use(cookieParser());
@@ -131,7 +130,7 @@ app.use(
 );
 
 // Auth
-app.use(AuthChecker);
+// app.use(AuthChecker);
 
 // Serve static files (uploaded images)
 app.use("/api/Uploads", express.static(path.join(__dirname, "../Uploads")));
