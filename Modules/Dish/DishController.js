@@ -16,13 +16,17 @@ const path = require("path");
 // const dishes = await CreateNewDoc(DishModel, { name, category }, data);
 // console.log("Dish: ", dishes);
 
+const FormatNames = (Dish, Restaurant) => {
+  console.log(Dish, Restaurant);
+  const RestaurantName = Restaurant.split(" ").join("-");
+  const ImageFileName = `${Dish.split(" ").join(
+    "-"
+  )}-${new Date().getTime()}.webp`;
+  console.log(RestaurantName, ImageFileName);
+  return { Restaurant: RestaurantName, ImageFileName };
+};
+
 const SaveDishImage = async (Buffer, ImageFileName, RestaurantName) => {
-  console.log(
-    ImageFileName,
-    RestaurantName,
-    "Dir: ",
-    path.resolve(__dirname, "../../Uploads")
-  );
   // Restaurant Folder Path
   const FolderPath = path.resolve(__dirname, `../../Uploads/${RestaurantName}`);
   console.log("Root: ", FolderPath);
@@ -95,7 +99,7 @@ const DishController = {
               _id: 0,
               categories: "$categories",
               dishes: "$dishes",
-              tables: "$tables"
+              tables: "$tables",
             },
           },
         ]);
@@ -145,13 +149,14 @@ const DishController = {
       const name = { ar: name_ar, en: name_en };
       const restaurantData = await GetDoc(RestaurantModel, restaurant);
       // Prepare Restaurant Folder Name
-      const RestaurantName = restaurantData.name.en.split(" ").join("-");
-      const ImageFileName = `${name.en
-        .split(" ")
-        .join("-")}-${new Date().getTime()}.webp`;
+      const { ImageFileName, Restaurant } = FormatNames(
+        name.en,
+        restaurantData.name.en
+      );
+
       if (req.file) {
         // Save Image
-        await SaveDishImage(req.file.buffer, ImageFileName, RestaurantName);
+        await SaveDishImage(req.file.buffer, ImageFileName, Restaurant);
         // return res.status(400).json({ msg: "No File Uploaded" });
       }
       // Dish Object
@@ -183,10 +188,47 @@ const DishController = {
 
   // Update Dish
   UpdateDish: async (req, res) => {
-    const { id, name, category, price, active } = req.body;
+    const {
+      id,
+      name_ar,
+      name_en,
+      category,
+      dishImage,
+      price,
+      active,
+      restaurant,
+    } = req.body;
     try {
-      if (isValidObjectId(id)) {
-        const DishData = { name, category, price, active };
+      const name = { ar: name_ar, en: name_en };
+      if (isValidObjectId(id) && isValidObjectId(restaurant)) {
+        const data = await RestaurantModel.findById(restaurant);
+        const { Restaurant, ImageFileName } = FormatNames(
+          name.en,
+          data.name.en
+        );
+
+        const ImagePath = path.resolve(
+          __dirname,
+          `../../Uploads/${Restaurant}/${dishImage}`
+        );
+
+        if (req.file) {
+          if (fs.existsSync(ImagePath)) {
+            fs.unlink(ImagePath, (err) => {
+              console.log(err);
+            });
+          }
+          // Save Image
+          await SaveDishImage(req.file.buffer, ImageFileName, Restaurant);
+        }
+
+        const DishData = {
+          name,
+          image: ImageFileName,
+          category,
+          price,
+          active,
+        };
         const DishToUpdate = await UpdateDoc(DishModel, id, DishData);
 
         // If Not Found

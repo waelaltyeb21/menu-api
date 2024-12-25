@@ -53,7 +53,22 @@ const RestaurantController = {
             },
           },
         ]);
-        console.log("Restaurant Data");
+
+        const supervisor = await RestaurantModel.aggregate([
+          {
+            $match: {
+              _id: new mongoose.Types.ObjectId(restaurant),
+            },
+          },
+          {
+            $lookup: {
+              from: "supervisors",
+              localField: "restaurant",
+              foreignField: "id",
+              as: "supervisors",
+            },
+          },
+        ]);
 
         // Top 5 Dishes
         const dishes = await DishModel.aggregate([
@@ -108,12 +123,10 @@ const RestaurantController = {
           ordersLength: restaurantData?.orders.length,
           dishes: dishes,
         };
-        console.log("Still Here ??");
 
-        // -----------------------------------------------------------
         // If Dishes Found
         if (restaurantData) return res.status(200).json(ResponseData);
-        return res.status(400).json({ msg: "No Dish Found" });
+        return res.status(400).json({ msg: "No Data Found" });
       }
       return res.status(400).json({ msg: "Invalid Restaurant" });
     } catch (error) {

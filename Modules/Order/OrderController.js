@@ -11,6 +11,7 @@ const {
   UpdateDoc,
   DeleteDoc,
   GetAllDocs,
+  GetDoc,
 } = require("../../Config/DbQueries/DbQueries");
 
 const allOrders = async (restaurant) => {
@@ -59,12 +60,24 @@ const allOrders = async (restaurant) => {
       $unwind: "$dishes",
     },
     {
+      $lookup: {
+        from: "restaurants",
+        localField: "dishes.restaurant",
+        foreignField: "_id",
+        as: "restaurants",
+      },
+    },
+    {
+      $unwind: "$restaurants",
+    },
+    {
       $group: {
         _id: "$table",
         user: { $first: "$user" },
         orderStatus: { $first: "$orderStatus" },
         tableName: { $first: "$tableID" },
         orderID: { $first: "$orderID" },
+        orderNo: { $first: "$restaurants.ordersDetails.totalRequestedOrders" },
         createdAt: { $first: "$createdAt" },
         totalOrders: { $sum: 1 },
         totalQuntity: { $sum: "$orders.quantity" },
@@ -84,17 +97,75 @@ const allOrders = async (restaurant) => {
   return orders;
 };
 
-const InitialStatus = (status) => {
-  const initial = {
-    isRequested: false,
-    isProccessing: false,
-    isPaid: false,
-  };
+const StartAndEndPoint = (period) => {
+  const Start = new Date();
+  const End = new Date(Start);
 
-  return {
-    ...initial,
-    [status]: true,
-  };
+  if (period == "day" || period == "Day") {
+    Start.setHours(0, 0, 0, 0); // Set to start of the day
+    End.setHours(23, 59, 59, 999); // Set to end of the day
+    return { Start, End };
+  }
+  if (period == "week" || period == "Week") {
+    const dayOfWeek = Start.getDay(); // 0 (Sunday) - 6 (Saturday)
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Adjust if week starts on Monday
+    Start.setDate(Start.getDate() - diffToMonday);
+    Start.setHours(0, 0, 0, 0);
+
+    End.setDate(Start.getDate() + 6); // End of the week (6 days later)
+    End.setHours(23, 59, 59, 999);
+    return { Start, End };
+  }
+  if (period == "month" || period == "Month") {
+    Start.setDate(1); // Set to the first day of the month
+    Start.setHours(0, 0, 0, 0);
+
+    End.setMonth(Start.getMonth() + 1); // Set to the first day of the next month
+    End.setHours(23, 59, 59, 999);
+    return { Start, End };
+  }
+  if (period == "year" || period == "Year") {
+    Start.setMonth(0, 1); // Set to January 1st of the current year
+    Start.setHours(0, 0, 0, 0);
+
+    End.setFullYear(Start.getFullYear() + 1); // Set to January 1st of the next year
+    End.setHours(23, 59, 59, 999);
+    return { Start, End };
+  } else {
+    return { Start: null, End: null };
+  }
+};
+const generateFakeUsers = async (count = 10, dishes, tables, restaurant) => {
+  const FakeOrders = [];
+  for (let i = 0; i < count; i++) {
+    const orders = [];
+    for (let j = 0; j < count; j++) {
+      const dish = dishes[j]?._id || dishes[0]?._id;
+      orders.push({
+        order: dish,
+        quantity: Math.floor(Math.random() * 10 + 1),
+      });
+    }
+
+    console.log(Math.floor(Math.random() * dishes.length));
+    FakeOrders.push({
+      orders: orders,
+      user: {
+        name: `Wael Altyeb ${i}`,
+        note: `No Sugar`,
+      },
+      table:
+        tables[Math.floor(Math.random() * dishes.length)]?._id ||
+        tables[0]?._id,
+      restaurant: restaurant,
+      orderStatus: "isRequested",
+      total: 8000,
+      createdAt: new Date().toISOString(),
+    });
+  }
+  await OrderModel.insertMany(FakeOrders);
+  console.log(`${count} fake orders generated!`);
+  return FakeOrders.length != 0;
 };
 
 const OrderController = {
@@ -188,6 +259,10 @@ const OrderController = {
     const { orders, restaurant, table, total, user, orderStatus } = req.body;
     try {
       if (isValidObjectId(table) && isValidObjectId(restaurant)) {
+        // If Orders Are More Than 50
+        if (orders.length >= 50)
+          return res.status(400).json({ msg: "To Much Orders" });
+        //
         const status = orderStatus || "isRequested";
         // Orders Data
         const data = {
@@ -461,6 +536,44 @@ const OrderController = {
       return res
         .status(500)
         .json({ msg: "Something Went Wrong!", error: error });
+    }
+  },
+  getOrdersOfWeek: async (req, res) => {
+    const { Start, End } = StartAndEndPoint("week");
+    if (!(Start && End)) return res.status(400).json({ msg: "No Data" });
+
+    const orders = await OrderModel.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: Start, $lt: End },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          name: { $first: "$user" },
+          total: { $first: "$total" },
+          table: { $first: "$table" },
+          orders: { $first: "$orders" },
+        },
+      },
+    ]);
+
+    if (orders.length != 0) return res.status(200).json(orders);
+    return res.status(400).json({ msg: "No Data" });
+  },
+  GenerateFakeData: async (req, res) => {
+    const { count, restaurant } = req.params;
+    try {
+      const dishes = await GetAllDocs(DishModel, { restaurant: restaurant });
+      const tables = await GetAllDocs(TableModel, { restaurant: restaurant });
+      const FakeData = generateFakeUsers(count, dishes, tables, restaurant);
+      if (FakeData)
+        return res
+          .status(200)
+          .json({ msg: "Fake Data Generates Successfully" });
+    } catch (error) {
+      return res.status(500).json({ msg: "Internal Server Error" });
     }
   },
 };

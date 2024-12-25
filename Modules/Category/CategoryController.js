@@ -14,9 +14,38 @@ const CategoryController = {
     const { restaurant } = req.params;
     try {
       if (isValidObjectId(restaurant)) {
-        const Categories = await GetAllDocs(CategoryModel, {
-          restaurant: restaurant,
-        });
+        // const Categories = await GetAllDocs(CategoryModel, {
+        //   restaurant: restaurant,
+        // });
+        const Categories = await DishModel.aggregate([
+          {
+            $match: {
+              restaurant: new mongoose.Types.ObjectId(restaurant),
+            },
+          },
+          {
+            $lookup: {
+              from: "categories",
+              localField: "category",
+              foreignField: "_id",
+              as: "categories",
+            },
+          },
+          {
+            $unwind: {
+              path: "$categories",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $group: {
+              _id: "$category",
+              dishCount: { $sum: 1 },
+              name: { $first: "$categories.name" },
+              active: { $first: "$categories.active" },
+            },
+          },
+        ]);
         // Check If Not Found
         if (!Categories)
           return res
@@ -37,7 +66,6 @@ const CategoryController = {
     try {
       if (isValidObjectId(category)) {
         const Category = await GetDoc(CategoryModel, category);
-        console.log(Category);
         // If Not Found
         if (!Category)
           return res.status(400).json({ msg: "تعذر العثور على هذا القسم" });

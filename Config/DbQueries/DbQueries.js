@@ -38,6 +38,8 @@ const UpdateDoc = async (Model, id, data) => {
 // Delete Document
 const DeleteDoc = async (Model, id) => {
   const Doc = await Model.findByIdAndDelete(id);
+  console.log(`Order With ID ${id} Has Been Deleted`);
+  console.log("Order", Doc);
   return Doc != null;
 };
 

@@ -71,11 +71,14 @@ app.set("io", io);
 module.exports = io;
 
 // Middelwares
+const cookieParser = require('cookie-parser');
 const { default: rateLimit } = require("express-rate-limit");
 const { default: helmet } = require("helmet");
-// const { AuthChecker } = require("../Middelwares/AuthToken");
+const { AuthChecker } = require("../Middelwares/AuthToken");
+const TokenGenerator = require("../Services/TokenGenerator.js");
 const path = require("path");
-
+// Cookies Parser
+app.use(cookieParser());
 // // Helmet
 // // Using Helmet to apply all headers
 // app.use(helmet());
@@ -159,13 +162,8 @@ app.use("/api/dishes", Dishes);
 app.use("/api/categories", Categories);
 app.use("/api/orders", Orders);
 app.use("/api/tables", Tables);
-app.use("/api/register", RegisterLimiter, Register);
+app.use("/api/register", Register);
 
-//
-app.post("/api/refresh", (req, res) => {
-  console.log("Headers: ", req.headers["authorization"]);
-  return res.status(200).json({ msg: "Refreshed" });
-});
 // 404 - Route Not Found
 app.get("*", (req, res) => {
   return res.status(404).json({ msg: "404 - Route Not Found!" });

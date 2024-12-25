@@ -1,18 +1,19 @@
 const bcrypt = require("bcryptjs");
+
 const Hashing = {
-  hashText: async (saltRounds = 20, text) => {
+  Hash: async (TextToHash, rounds) => {
     try {
-      const hashing = bcrypt.hashSync(text, 20);
-      console.log(hashing);
-      return hashing;
+      console.log("TextToHash:", TextToHash, "Rounds:", rounds);
+      const hash = await bcrypt.hash(TextToHash, rounds);
+      console.log(hash);
+      return hash;
     } catch (error) {
       return error;
     }
   },
-  deHashText: async (payload, HashedData) => {
+  Compare: async (payload, HashedData) => {
     try {
       const Compare = await bcrypt.compare(payload, HashedData);
-      console.log(Compare);
       return Compare;
     } catch (error) {
       return error;
