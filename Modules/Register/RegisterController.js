@@ -20,7 +20,7 @@ const RegisterController = {
 
       const restaurant = await RestaurantModel.findById(supervisor.restaurant);
       // Hashing
-      const Hashed = await Hashing.Hash(password, 10);
+      // const Hashed = await Hashing.Hash(password, 10);
       const isMatched = await Hashing.Compare(password, supervisor.password);
       //   ------------------------------------------------
       if (!isMatched)
@@ -52,16 +52,16 @@ const RegisterController = {
           httpOnly: true,
           secure: true,
           sameSite: "None",
-          // path: "/",
-          // domain: "https://restaurants-menu-55879.web.app",
+          path: "/",
+          domain: "https://restaurants-menu-55879.web.app",
         })
         .cookie("RefreshToken", RefreshToken, {
           maxAge: 2 * 60 * 60 * 1000,
           httpOnly: true,
           secure: true,
           sameSite: "None",
-          // path: "/",
-          // domain: "https://restaurants-menu-55879.web.app",
+          path: "/",
+          domain: "https://restaurants-menu-55879.web.app",
         })
         .status(200)
         .json({
@@ -115,7 +115,7 @@ const RegisterController = {
           maxAge: 15 * 60 * 1000,
           httpOnly: true,
           secure: true,
-          sameSite: "Lax",
+          sameSite: "None",
           path: "/",
           domain: "https://restaurants-menu-55879.web.app",
         })
@@ -123,7 +123,7 @@ const RegisterController = {
           maxAge: 2 * 60 * 60 * 1000,
           httpOnly: true,
           secure: true,
-          sameSite: "Lax",
+          sameSite: "None",
           path: "/",
           domain: "https://restaurants-menu-55879.web.app",
         })
