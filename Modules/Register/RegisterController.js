@@ -14,12 +14,13 @@ const RegisterController = {
   Login: async (req, res) => {
     const { email, password } = req.body;
     try {
+      console.log(email, password);
       const [supervisor] = await Supervisor.find({ email: email });
       if (!supervisor)
         return res.status(400).json({ msg: "Incorrect Email Or Password" });
 
       const restaurant = await RestaurantModel.findById(supervisor.restaurant);
-
+      console.log(restaurant);
       // Hashing
       const Hashed = await Hashing.Hash(password, 10);
       console.log(Hashed);
@@ -55,17 +56,17 @@ const RegisterController = {
           maxAge: 15 * 60 * 1000,
           httpOnly: true,
           secure: true,
-          sameSite: "Lax",
+          sameSite: "Strict",
           path: "/",
-          domain: "https://restaurants-menu-55879.web.app",
+          // domain: "https://restaurants-menu-55879.web.app",
         })
         .cookie("RefreshToken", RefreshToken, {
           maxAge: 2 * 60 * 60 * 1000,
           httpOnly: true,
           secure: true,
-          sameSite: "Lax",
+          sameSite: "Strict",
           path: "/",
-          domain: "https://restaurants-menu-55879.web.app",
+          // domain: "https://restaurants-menu-55879.web.app",
         })
         .status(200)
         .json({
@@ -157,10 +158,10 @@ const RegisterController = {
       // console.log(`Your OTP: ${OTP}`);
 
       const MailOptions = {
-        from: process.env.Verify_Email, // sender address
-        to: email, // recipient address
-        subject: "Rest Your Password", // Subject line
-        text: `Your OTP Code Is ${OTP}`, // plain text body
+        from: process.env.Verify_Email,
+        to: email,
+        subject: "Rest Your Password",
+        text: `Your OTP Code Is ${OTP}`,
       };
 
       Transporter.sendMail(MailOptions, (error, info) => {
