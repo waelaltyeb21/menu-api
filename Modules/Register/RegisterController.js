@@ -14,19 +14,14 @@ const RegisterController = {
   Login: async (req, res) => {
     const { email, password } = req.body;
     try {
-      console.log(email, password);
       const [supervisor] = await Supervisor.find({ email: email });
       if (!supervisor)
         return res.status(400).json({ msg: "Incorrect Email Or Password" });
 
       const restaurant = await RestaurantModel.findById(supervisor.restaurant);
-      console.log(restaurant);
       // Hashing
       const Hashed = await Hashing.Hash(password, 10);
-      console.log(Hashed);
       const isMatched = await Hashing.Compare(password, supervisor.password);
-      console.log(supervisor.password);
-      console.log("IsMatch: ", isMatched);
       //   ------------------------------------------------
       if (!isMatched)
         return res.status(400).json({ msg: "Incorrect Email Or Password" });
@@ -56,7 +51,7 @@ const RegisterController = {
           maxAge: 15 * 60 * 1000,
           httpOnly: true,
           secure: true,
-          sameSite: "Strict",
+          sameSite: "Lax",
           path: "/",
           // domain: "https://restaurants-menu-55879.web.app",
         })
@@ -64,7 +59,7 @@ const RegisterController = {
           maxAge: 2 * 60 * 60 * 1000,
           httpOnly: true,
           secure: true,
-          sameSite: "Strict",
+          sameSite: "Lax",
           path: "/",
           // domain: "https://restaurants-menu-55879.web.app",
         })
