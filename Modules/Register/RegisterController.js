@@ -46,35 +46,17 @@ const RegisterController = {
       );
 
       // Response
-      return res
-        .cookie("Token", Token, {
-          maxAge: 15 * 60 * 1000,
-          // httpOnly: true,
-          // secure: true,
-          sameSite: "None",
-          path: "/",
-          // domain: "https://restaurants-menu-55879.web.app",
-        })
-        .cookie("RefreshToken", RefreshToken, {
-          maxAge: 2 * 60 * 60 * 1000,
-          // httpOnly: true,
-          // secure: true,
-          sameSite: "None",
-          path: "/",
-          // domain: "https://restaurants-menu-55879.web.app",
-        })
-        .status(200)
-        .json({
-          msg: "Found",
-          restaurant: restaurant,
-          supervisor: {
-            username: supervisor.username,
-            email: supervisor.email,
-            createdAt: supervisor.createdAt,
-          },
-          Token: Token,
-          RefreshToken: RefreshToken,
-        });
+      return res.status(200).json({
+        msg: "Found",
+        restaurant: restaurant,
+        supervisor: {
+          username: supervisor.username,
+          email: supervisor.email,
+          createdAt: supervisor.createdAt,
+        },
+        Token: Token,
+        RefreshToken: RefreshToken,
+      });
     } catch (error) {
       return res.status(500).json({ msg: "Somthing Went Wrong" });
     }
@@ -110,28 +92,10 @@ const RegisterController = {
         REFRESH_TOKEN_LIFETIME
       );
 
-      return res
-        .cookie("Token", Token, {
-          maxAge: 15 * 60 * 1000,
-          httpOnly: true,
-          secure: true,
-          sameSite: "None",
-          path: "/",
-          domain: "https://restaurants-menu-55879.web.app",
-        })
-        .cookie("RefreshToken", Refresh, {
-          maxAge: 2 * 60 * 60 * 1000,
-          httpOnly: true,
-          secure: true,
-          sameSite: "None",
-          path: "/",
-          domain: "https://restaurants-menu-55879.web.app",
-        })
-        .status(200)
-        .json({
-          msg: "Token Has Been Refreshed",
-          token: Token,
-        });
+      return res.status(200).json({
+        msg: "Token Has Been Refreshed",
+        token: Token,
+      });
     } catch (error) {
       return res.status(500).json({ msg: "Internal Server Error" });
     }
