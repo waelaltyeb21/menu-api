@@ -50,18 +50,18 @@ const RegisterController = {
         .cookie("Token", Token, {
           maxAge: 15 * 60 * 1000,
           // httpOnly: true,
-          secure: true,
+          // secure: true,
           sameSite: "Lax",
-          path: "/",
-          domain: "https://restaurants-menu-55879.web.app",
+          // path: "/",
+          // domain: "https://restaurants-menu-55879.web.app",
         })
         .cookie("RefreshToken", RefreshToken, {
           maxAge: 2 * 60 * 60 * 1000,
           // httpOnly: true,
-          secure: true,
+          // secure: true,
           sameSite: "Lax",
-          path: "/",
-          domain: "https://restaurants-menu-55879.web.app",
+          // path: "/",
+          // domain: "https://restaurants-menu-55879.web.app",
         })
         .status(200)
         .json({
