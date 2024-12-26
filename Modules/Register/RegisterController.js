@@ -94,7 +94,8 @@ const RegisterController = {
 
       return res.status(200).json({
         msg: "Token Has Been Refreshed",
-        token: Token,
+        Token: Token,
+        Refresh: Refresh,
       });
     } catch (error) {
       return res.status(500).json({ msg: "Internal Server Error" });
@@ -122,6 +123,10 @@ const RegisterController = {
         subject: "Rest Your Password",
         text: `Your OTP Code Is ${OTP}`,
       };
+      
+      console.log("Verify Email: ", process.env.Verify_Email);
+      console.log("Transporter: ", Transporter);
+      console.log("MailOptions: ", MailOptions);
 
       Transporter.sendMail(MailOptions, (error, info) => {
         if (error) {
