@@ -61,6 +61,7 @@ const TableController = {
   // Create New Table
   CreateNewTable: async (req, res) => {
     const { tablesLength, tableLetter, restaurantID } = req.body;
+    console.log(tablesLength, tableLetter, restaurantID);
     try {
       if (isValidObjectId(restaurantID)) {
         if (!tablesLength || !tableLetter)
@@ -76,7 +77,7 @@ const TableController = {
 
         // Insert New Tables
         const added = await TableModel.insertMany(newTables);
-
+        console.log(added);
         if (added) {
           const tables = await TableModel.find({ restaurant: restaurantID });
           // Send Notification To Restaurant

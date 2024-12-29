@@ -3,9 +3,7 @@ const bcrypt = require("bcryptjs");
 const Hashing = {
   Hash: async (TextToHash, rounds) => {
     try {
-      console.log("TextToHash:", TextToHash, "Rounds:", rounds);
       const hash = await bcrypt.hash(TextToHash, rounds);
-      console.log(hash);
       return hash;
     } catch (error) {
       return error;

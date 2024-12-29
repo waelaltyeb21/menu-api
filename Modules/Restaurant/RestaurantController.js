@@ -2,14 +2,62 @@ const { default: mongoose, isValidObjectId } = require("mongoose");
 const RestaurantModel = require("./RestaurantModel");
 const DishModel = require("../Dish/DishModel");
 const TableModel = require("../Table/TableModel");
-const {
-  GetDoc,
-  UpdateDoc,
-  CreateNewDoc,
-} = require("../../Config/DbQueries/DbQueries");
+const { UpdateDoc, CreateNewDoc } = require("../../Config/DbQueries/DbQueries");
+const Supervisor = require("../Supervisor/Supervisor");
+const Hashing = require("../../Services/Hashing");
+const CategoryModel = require("../Category/CategoryModel");
+const OrderModel = require("../Order/OrderModel");
 
 const RestaurantController = {
-  // Get All Restaurants
+  GetRestaurantData: async (req, res) => {
+    const { restaurant } = req.params;
+    try {
+      const [restaurantData] = await RestaurantModel.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(restaurant),
+          },
+        },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "_id",
+            foreignField: "restaurant",
+            as: "categories",
+          },
+        },
+        {
+          $lookup: {
+            from: "dishes",
+            localField: "id",
+            foreignField: "categories._id",
+            as: "dishes",
+          },
+        },
+        {
+          $lookup: {
+            from: "tables",
+            localField: "_id",
+            foreignField: "restaurant",
+            as: "tables",
+          },
+        },
+        {
+          $lookup: {
+            from: "orders",
+            localField: "restaurant",
+            foreignField: "id",
+            as: "orders",
+          },
+        },
+      ]);
+      if (restaurantData) return res.status(200).json(restaurantData);
+      return res.status(400).json({ msg: "No Data Found" });
+    } catch (error) {
+      return res.status(500).json({ msg: "Internal Server Error" });
+    }
+  },
+  // Get Restaurant Data
   GetRestaurant: async (req, res) => {
     const { restaurant } = req.params;
     try {
@@ -31,7 +79,7 @@ const RestaurantController = {
           {
             $lookup: {
               from: "dishes",
-              localField: "id",
+              localField: "_id",
               foreignField: "categories._id",
               as: "dishes",
             },
@@ -47,8 +95,8 @@ const RestaurantController = {
           {
             $lookup: {
               from: "orders",
-              localField: "restaurant",
-              foreignField: "id",
+              foreignField: "restaurant",
+              localField: "_id",
               as: "orders",
             },
           },
@@ -265,19 +313,42 @@ const RestaurantController = {
   },
   // Create New Restaurant
   CreateNewRestaurant: async (req, res) => {
-    const { name, shift, coords, logo, active } = req.body;
+    const { name, shift, coords, distance, supervisor } = req.body;
     try {
-      const RestaurantData = { name, shift, coords, logo, active };
-      const NewRestaurant = await CreateNewDoc(
+      const RestaurantData = { name, shift, distanceToOrder: distance, coords };
+      const [NewRestaurant] = await CreateNewDoc(
         RestaurantModel,
         { name: name },
         RestaurantData
       );
+      console.log("NewRestaurant: ", NewRestaurant, "Check: ", !NewRestaurant);
       // Check If Restaurant Exist Or Not
       if (!NewRestaurant)
         return res.status(400).json({ msg: "هذا المطعم موجود بالفعل" });
-      // Return A Response To FrontEnd
-      return res.status(201).json({ msg: "تم اضافة مطعم جديد" });
+
+      if (NewRestaurant) {
+        console.log("Restaurant Has Been Created Successfuly");
+        const Hashed = await Hashing.Hash(supervisor.password, 10);
+        console.log("Hashed: ", Hashed);
+        const SupervisorData = {
+          username: supervisor.username,
+          email: supervisor.email,
+          password: Hashed,
+          restaurant: NewRestaurant._id,
+        };
+        console.log("SupervisorData: ", SupervisorData);
+        const NewSupervisor = await CreateNewDoc(
+          Supervisor,
+          {
+            email: supervisor.email,
+          },
+          SupervisorData
+        );
+        console.log("Supervisor: ", NewSupervisor);
+        // Return A Response To FrontEnd
+        return res.status(201).json({ msg: "تم اضافة مطعم جديد" });
+      }
+      return res.status(400).json({ msg: "حدث خطأ اثناء اضافة المطعم" });
     } catch (error) {
       return res
         .status(500)
@@ -314,7 +385,18 @@ const RestaurantController = {
   },
   // Delete Restaurant
   DeleteRestaurant: async (req, res) => {
+    const { id } = req.params;
     try {
+      console.log("Restaurant To Delete: ", id);
+      await DishModel.deleteMany({ restaurant: id });
+      await CategoryModel.deleteMany({ restaurant: id });
+      await OrderModel.deleteMany({ restaurant: id });
+      await TableModel.deleteMany({ restaurant: id });
+      await RestaurantModel.findByIdAndDelete(id);
+      await Supervisor.deleteMany({ restaurant: id });
+      return res
+        .status(200)
+        .json({ msg: "Restaurant Has Been Delete Successfuly" });
     } catch (error) {
       return res
         .status(500)

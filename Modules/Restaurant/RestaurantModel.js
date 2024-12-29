@@ -14,7 +14,8 @@ const RestaurantSchema = new mongoose.Schema({
   },
   logo: {
     type: String,
-    required: true,
+    default: "logo.png",
+    // required: true,
   },
   distanceToOrder: {
     type: Number,

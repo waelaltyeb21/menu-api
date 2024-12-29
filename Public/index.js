@@ -19,6 +19,7 @@ const io = new Server(server, {
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
+      "http://localhost:5175",
       "https://digital-menu1.web.app", // Client
       "https://restaurants-menu-55879.web.app", // Dashboard
     ],
@@ -34,8 +35,6 @@ const io = new Server(server, {
 io.setMaxListeners(2000);
 
 const {
-  ClientsIDs,
-  RestaurantsIDs,
   HandleConnectedClients,
   HandleConnectedRestaurants,
   HandleDisconnectedClients,
@@ -80,7 +79,7 @@ const path = require("path");
 app.use(cookieParser());
 // // Helmet
 // // Using Helmet to apply all headers
-// app.use(helmet());
+app.use(helmet());
 
 // Or explicitly enable and configure all the individual Helmet features
 // Controls DNS prefetching (default: false)
@@ -121,6 +120,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
+      "http://localhost:5175",
       "https://digital-menu1.web.app", // Client
       "https://restaurants-menu-55879.web.app", // Dashboard
     ],
@@ -172,8 +172,6 @@ app.get("*", (req, res) => {
 mongoose
   .connect(MONGO_URI)
   .then(() => {
-    server.listen(PORT, () =>
-      console.log(`### - Socket Io Server Running On Port ${PORT} - ###`)
-    );
+    server.listen(PORT, () => console.log(`### - The Server Is Running - ###`));
   })
   .catch((err) => console.log("Something Went Wrong!", err));

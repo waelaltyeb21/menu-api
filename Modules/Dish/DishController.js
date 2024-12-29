@@ -12,27 +12,20 @@ const {
 const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
-// Create Dish With Check
-// const dishes = await CreateNewDoc(DishModel, { name, category }, data);
-// console.log("Dish: ", dishes);
 
 const FormatNames = (Dish, Restaurant) => {
-  console.log(Dish, Restaurant);
   const RestaurantName = Restaurant.split(" ").join("-");
   const ImageFileName = `${Dish.split(" ").join(
     "-"
   )}-${new Date().getTime()}.webp`;
-  console.log(RestaurantName, ImageFileName);
   return { Restaurant: RestaurantName, ImageFileName };
 };
 
 const SaveDishImage = async (Buffer, ImageFileName, RestaurantName) => {
   // Restaurant Folder Path
   const FolderPath = path.resolve(__dirname, `../../Uploads/${RestaurantName}`);
-  console.log("Root: ", FolderPath);
   // // Create Restaurant Folder If Not Exist
   if (!fs.existsSync(FolderPath)) {
-    console.log("Created");
     fs.mkdirSync(FolderPath, { recursive: true });
   }
   const ImagePath = path.join(FolderPath, ImageFileName);
@@ -46,19 +39,6 @@ const SaveDishImage = async (Buffer, ImageFileName, RestaurantName) => {
 };
 
 const DishController = {
-  Testing: async (req, res) => {
-    const { restaurant } = req.params;
-    try {
-      // null / object
-      const dishes = await DeleteDoc(DishModel, "67386b75343c9244dacfea79");
-      if (!dishes) return res.status(400).json({ msg: "Failed" });
-      if (dishes) return res.status(201).json({ msg: "Created" });
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ msg: "Something Went Wrong!", error: error });
-    }
-  },
   // All Dishes
   GetDishes: async (req, res) => {
     const { restaurant } = req.params;
@@ -125,7 +105,6 @@ const DishController = {
         const CategoriesData = await GetAllDocs(CategoryModel, {
           restaurant: restaurant,
         });
-        console.log("Is There: ", !CategoriesData);
         // Check If There Is Data
         if (!DishDetails || !CategoriesData)
           return res.status(400).json({ msg: "هذا الصنف غير موجود" });

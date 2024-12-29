@@ -10,9 +10,5 @@ Orders.put("/complate_order", OrderController.ComplateOrder);
 Orders.put("/update_order", OrderController.UpdateOrder);
 Orders.delete("/delete_order/:id", OrderController.DeleteOrder);
 Orders.get("/orders/week_orders", OrderController.getOrdersOfWeek);
-Orders.get(
-  "/orders/fake_data/:count/:restaurant",
-  OrderController.GenerateFakeData
-);
 
 module.exports = Orders;

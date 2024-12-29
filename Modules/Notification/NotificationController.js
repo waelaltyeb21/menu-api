@@ -45,6 +45,7 @@ const HandleConnectedRestaurants = (RestaurantID, SocketID) => {
   // If Not Register
   if (!restaurant) {
     console.log("### Restaurant Connected Successfuly ###");
+    console.log(`ID: ${SocketID}`);
     RestaurantsIDs.push({ RestaurantID, SocketID });
   }
 };
@@ -58,7 +59,6 @@ const HandleDisonnectedRestaurants = (socketID) => {
     RestaurantsIDs = RestaurantsIDs.filter(
       (restaurant) => restaurant?.SocketID != socketID
     );
-    console.table(RestaurantsIDs);
     console.log(
       "## Restuarant With Id ",
       socketID,
@@ -78,13 +78,6 @@ const GetRestaurantID = (restaurantID) => {
 // Send A Notification To Restaurant => New Order
 const SendNotificationToRestaurant = (io, RestaurantID, order) => {
   const SocketID = GetRestaurantID(RestaurantID);
-  console.log(
-    "Message Sent To Restaurant With ID: ",
-    SocketID,
-    "Is: ",
-    SocketID != null
-  );
-  console.log("Order: ", order);
   if (SocketID != null) {
     io.to(SocketID).emit("New-Order", order);
   }

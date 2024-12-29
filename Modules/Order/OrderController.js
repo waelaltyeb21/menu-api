@@ -135,38 +135,6 @@ const StartAndEndPoint = (period) => {
     return { Start: null, End: null };
   }
 };
-const generateFakeUsers = async (count = 10, dishes, tables, restaurant) => {
-  const FakeOrders = [];
-  for (let i = 0; i < count; i++) {
-    const orders = [];
-    for (let j = 0; j < count; j++) {
-      const dish = dishes[j]?._id || dishes[0]?._id;
-      orders.push({
-        order: dish,
-        quantity: Math.floor(Math.random() * 10 + 1),
-      });
-    }
-
-    console.log(Math.floor(Math.random() * dishes.length));
-    FakeOrders.push({
-      orders: orders,
-      user: {
-        name: `Wael Altyeb ${i}`,
-        note: `No Sugar`,
-      },
-      table:
-        tables[Math.floor(Math.random() * dishes.length)]?._id ||
-        tables[0]?._id,
-      restaurant: restaurant,
-      orderStatus: "isRequested",
-      total: 8000,
-      createdAt: new Date().toISOString(),
-    });
-  }
-  await OrderModel.insertMany(FakeOrders);
-  console.log(`${count} fake orders generated!`);
-  return FakeOrders.length != 0;
-};
 
 const OrderController = {
   // Get All Orders
@@ -453,7 +421,6 @@ const OrderController = {
   // Update Order
   UpdateOrder: async (req, res) => {
     const { id, orders, PrvTable, CurTable, user, orderStatus } = req.body;
-    console.log(id, orders, user, orderStatus);
     try {
       if (
         isValidObjectId(id) &&
@@ -561,20 +528,6 @@ const OrderController = {
 
     if (orders.length != 0) return res.status(200).json(orders);
     return res.status(400).json({ msg: "No Data" });
-  },
-  GenerateFakeData: async (req, res) => {
-    const { count, restaurant } = req.params;
-    try {
-      const dishes = await GetAllDocs(DishModel, { restaurant: restaurant });
-      const tables = await GetAllDocs(TableModel, { restaurant: restaurant });
-      const FakeData = generateFakeUsers(count, dishes, tables, restaurant);
-      if (FakeData)
-        return res
-          .status(200)
-          .json({ msg: "Fake Data Generates Successfully" });
-    } catch (error) {
-      return res.status(500).json({ msg: "Internal Server Error" });
-    }
   },
 };
 module.exports = {

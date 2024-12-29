@@ -20,10 +20,11 @@ const CheckDoc = async (Model, Selector = {}) => {
 // Create New Document
 const CreateNewDoc = async (Model, Selector = {}, data) => {
   const Check = await CheckDoc(Model, Selector);
-  console.log("Checked: ", Check, " Result: ", !Check);
+  console.log("Check: ", Check);
   if (!Check) {
     const CreateDoc = new Model(data);
-    return await CreateDoc.save();
+    await CreateDoc.save();
+    return [CreateDoc];
   }
   return false;
 };

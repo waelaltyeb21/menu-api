@@ -67,10 +67,6 @@ const RegisterController = {
       const RefreshToken = req.cookies["RefreshToken"];
       // Verify Token And Refresh Token
       const VerifyRefreshToken = TokenGenerator.verifyToken(RefreshToken);
-      console.log(
-        "isVerified Refresh Token?",
-        VerifyRefreshToken ? "Yep" : "No"
-      );
 
       if (!VerifyRefreshToken)
         return res.status(403).json({ msg: "Invalid Refresh Token" });
@@ -123,10 +119,6 @@ const RegisterController = {
         subject: "Rest Your Password",
         text: `Your OTP Code Is ${OTP}`,
       };
-      
-      console.log("Verify Email: ", process.env.Verify_Email);
-      console.log("Transporter: ", Transporter);
-      console.log("MailOptions: ", MailOptions);
 
       Transporter.sendMail(MailOptions, (error, info) => {
         if (error) {

@@ -24,7 +24,7 @@ const AuthChecker = async (req, res, next) => {
     next();
   } else {
     req.token = null;
-    console.info("Auth: ", authHeader);
+    console.info("No Token");
     return res.status(401).json({ msg: "Access Denied!" });
   }
 };
