@@ -244,13 +244,13 @@ const RestaurantController = {
             restaurant,
           });
         // If Table Not Active
-        if (!table.active)
-          return res.status(400).json({
-            msg: {
-              ar: "هذه الطاولة محجوزة",
-              en: "This Table Has Been Booked",
-            },
-          });
+        // if (!table.active)
+        //   return res.status(400).json({
+        //     msg: {
+        //       ar: "هذه الطاولة محجوزة",
+        //       en: "This Table Has Been Booked",
+        //     },
+        //   });
         // ---------------------------------------------------------------
         const [restaurantData] = await RestaurantModel.aggregate([
           {

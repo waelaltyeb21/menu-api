@@ -5,6 +5,9 @@ let ClientsIDs = [];
 // Handle Connected Clients
 const HandleConnectedClients = (ClientID, SocketID) => {
   const Client = ClientsIDs.find((Client) => Client?.ClientID === ClientID);
+  console.log("## Client: ", Client, "##");
+  console.log("Check ?", !Client);
+  console.log("Clients: ", ClientsIDs);
   if (!Client) {
     console.log("### Client Connected Successfuly ###");
     ClientsIDs.push({ ClientID, SocketID });

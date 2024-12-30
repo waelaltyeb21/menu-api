@@ -43,8 +43,10 @@ const {
 
 // Socket.io
 io.on("connection", (socket) => {
+  console.log("New Connection: ", socket.id);
   // Client Connected
   socket.on("Client-Connected", (ClientID) => {
+    console.log("Client: ", ClientID, socket.id);
     HandleConnectedClients(ClientID, socket.id);
   });
 
